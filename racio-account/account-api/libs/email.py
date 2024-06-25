@@ -7,7 +7,7 @@ from flask import current_app, render_template
 from extensions.ext_mail import mail
 
 
-def send_invite_member_mail(language: str, to: str, token: str, inviter_name: str):
+def send_invite_member_mail(language: str, to: str, token: str, inviter_name: str, tenant_name: str):
     """
     Async Send invite member mail
     :param language
@@ -25,10 +25,11 @@ def send_invite_member_mail(language: str, to: str, token: str, inviter_name: st
 
     # send invite member mail using different languages
     try:
-        url = f'{current_app.config.get("CONSOLE_WEB_URL")}/activate?token={token}'
+        url = f'{current_app.config.get("CONSOLE_WEB_URL")}/account/activate?token={token}'
         if language == 'zh-Hans':
             html_content = render_template('invite_member_mail_template_zh-CN.html',
                                            to=to,
+                                           tenant_name=tenant_name,
                                            url=url)
             threading.Thread(target=mail.send,
                              args=(to, "立即加入", html_content)).start()

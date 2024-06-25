@@ -5,17 +5,17 @@ import dotenv
 dotenv.load_dotenv()
 
 DEFAULTS = {
-    'DB_USERNAME': 'dify',
-    'DB_PASSWORD': 'Ejdrn2S8HaRX84mp',
-    'DB_HOST': 'test.corp.chaolian360.com',
-    'DB_PORT': '8981',
-    'DB_DATABASE': 'racio',
+    'DB_USERNAME': '',
+    'DB_PASSWORD': '',
+    'DB_HOST': '',
+    'DB_PORT': '',
+    'DB_DATABASE': '',
     'DB_CHARSET': 'utf8',
-    'REDIS_HOST': '1Panel-redis-QPTy',
-    'REDIS_PORT': '6379',
+    'REDIS_HOST': '',
+    'REDIS_PORT': '',
     'REDIS_DB': '0',
     'REDIS_USE_SSL': 'False',
-    'REDIS_PASSWORD': 'sIUTYURTU_6tnbMN',
+    'REDIS_PASSWORD': '',
     'OAUTH_REDIRECT_PATH': '/console/api/oauth/authorize',
     'OAUTH_REDIRECT_INDEX_PATH': '/',
     'DEPLOY_ENV': 'PRODUCTION',
@@ -29,7 +29,7 @@ DEFAULTS = {
     'LOG_DATEFORMAT': '%Y-%m-%d %H:%M:%S',
     # 'WX_CLIENT_ID': '',
     # 'WX_CLIENT_SECRET': '',
-    'INVITE_EXPIRY_HOURS': 72,
+    # 'INVITE_EXPIRY_HOURS': 72,
 
     # 'CONSOLE_API_URL': '',
     # 'CONSOLE_WEB_URL': '',
@@ -164,7 +164,7 @@ class Config:
         self.SMTP_PASSWORD = get_env('SMTP_PASSWORD')
         self.SMTP_USE_TLS = get_bool_env('SMTP_USE_TLS')
 
-        self.INVITE_EXPIRY_HOURS = get_env('INVITE_EXPIRY_HOURS')
+        # self.INVITE_EXPIRY_HOURS = get_env('INVITE_EXPIRY_HOURS')
 
         self.TENCENT_SECRET_ID = get_env('TENCENT_SECRET_ID')
         self.TENCENT_SECRET_KEY = get_env('TENCENT_SECRET_KEY')
@@ -183,3 +183,6 @@ class Config:
         self.DIFY_API_URL = get_env('DIFY_API_URL')
 
         self.INIT_PASSWORD = get_env('INIT_PASSWORD')
+
+        self.WECHAT_APP_ID = get_env('WECHAT_APP_ID')
+        self.WECHAT_APP_SECRET = get_env('WECHAT_APP_SECRET')

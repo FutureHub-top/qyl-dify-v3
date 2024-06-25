@@ -3,19 +3,25 @@ import requests
 from flask import current_app, redirect, request
 from flask_restful import Resource, reqparse
 from services.racio.account_service import AccountService
-from libs.oauth import WxOAuth
+from libs.oauth import WxOAuth, WeChatOAuth
 from libs.response import response_json
 from . import api
 
 
 def get_oauth_providers():
     with current_app.app_context():
+
         wx_oauth = WxOAuth(client_id=current_app.config.get('WX_CLIENT_ID'),
                            client_secret=current_app.config.get('WX_CLIENT_SECRET'),
                            redirect_uri=current_app.config.get('CONSOLE_API_URL') + '/console/api/oauth/authorize/wx')
 
+        wechat_oauth = WeChatOAuth(client_id=current_app.config.get('WECHAT_APP_ID'),
+                           client_secret=current_app.config.get('WECHAT_APP_SECRET'),
+                           redirect_uri=current_app.config.get('CONSOLE_WEB_URL') + '/dashboard/#/auth/gzhcheck')
+
         OAUTH_PROVIDERS = {
             'wx': wx_oauth,
+            'wechat': wechat_oauth
         }
         return OAUTH_PROVIDERS
 
@@ -65,7 +71,7 @@ class OAuthGetAccessToken(Resource):
         try:
             access_token, openid = oauth_provider.get_access_token(args['code'])
             oauth_user_info = oauth_provider.get_user_info(access_token, openid)
-            AccountService.save_access_code(access_token, 'wx', oauth_user_info.id)
+            AccountService.save_access_code(access_token, 'wx', oauth_user_info.id, oauth_user_info.name, oauth_user_info.headimgurl, oauth_user_info.unionid)
         except requests.exceptions.HTTPError as e:
             logging.exception(
                 f"An error occurred during the OAuth process with {provider}: {e.response.text}")
@@ -73,6 +79,6 @@ class OAuthGetAccessToken(Resource):
         return response_json(0, 'success', access_token)
 
 
-# api.add_resource(OAuthLogin, '/oauth/login/<provider>')
+api.add_resource(OAuthLogin, '/oauth/login/<provider>')
 # api.add_resource(OAuthCallback, '/oauth/authorize/<provider>')
 api.add_resource(OAuthGetAccessToken, '/oauth/access_token/<provider>')

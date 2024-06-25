@@ -12,7 +12,9 @@ account_partial_fields = {
     'last_login_at': TimestampField,
     'last_login_ip': fields.String,
     'created_at': TimestampField,
-    'tenant_names': fields.List(fields.String)
+    'tenant_names': fields.List(fields.String),
+    'nickname': fields.String,
+    'headimgurl': fields.String
 }
 
 account_pagination_fields = {
@@ -36,7 +38,9 @@ member_invites_fields = {
     'id': fields.String,
     'tenant_id': fields.String,
     'role': fields.String,
-    'invited_by': fields.String,
     'remark': fields.String,
     'created_at': TimestampField,
+    'invite_link': fields.String,
+    'email': fields.String,
+    "invited_by": fields.String
 }

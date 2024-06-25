@@ -4,6 +4,8 @@ from libs.response import response_json
 from services.dify.api_service import ApiService
 from fields.app_fields import tenants_fields
 from models.racio.account import AccountRole
+from services.racio.account_service import AccountService
+from libs.helper import uuid_value
 from libs.login import login_required
 from . import api
 
@@ -28,7 +30,7 @@ class SwitchTenantApi(Resource):
     @login_required
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('tenant_id', type=str, required=True, location='json')
+        parser.add_argument('tenant_id', type=uuid_value, required=True, location='json')
         args = parser.parse_args()
 
         apiService = ApiService()
@@ -36,7 +38,14 @@ class SwitchTenantApi(Resource):
         if not tenant:
             return response_json(-1, '切换空间失败')
         current_user.account_role = tenant['role']
-        return response_json(0, 'success', tenant['role'])
+        AccountService.set_user_data(account_id=current_user.id, tenant_id=args['tenant_id'],
+                                     account_role=tenant['role'])
+        data = {
+            'tenant_id': tenant['id'],
+            'name': tenant['name'],
+            'role': tenant['role'],
+        }
+        return response_json(0, 'success', data)
 
 
 api.add_resource(TenantListApi, '/tenant/list')

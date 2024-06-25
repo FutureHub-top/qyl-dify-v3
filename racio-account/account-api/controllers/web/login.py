@@ -1,6 +1,6 @@
 import flask_login
 from services.errors.account import AccountLoginError
-from flask import current_app, request
+from flask import request
 from flask_restful import Resource, reqparse
 from libs.password import valid_password
 from libs.response import response_json
@@ -27,6 +27,7 @@ class LoginApi(Resource):
         AccountService.update_last_login(account, request)
 
         token = AccountService.get_account_jwt_token(account)
+        AccountService.set_user_data(account_id=account.id, account_role=account.account_role)
         return response_json(0, 'success', token)
 
 

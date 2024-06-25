@@ -313,7 +313,7 @@ services:
       CONSOLE_WEB_URL: 'http://at-stg.racio.chat'
       # Password for admin user initialization.
       # If left unset, admin user will not be prompted for a password when creating the initial admin account.
-      INIT_PASSWORD: '12345678'
+      INIT_PASSWORD: 'admin0625'
       # The base URL of console application api server, refers to the Console base URL of WEB service if console domain is
       # different from api or web app domain. 微信授权用到
       CONSOLE_API_URL: 'http://at-stg.racio.chat'
@@ -366,6 +366,9 @@ services:
       # Cloud OAuth2 configurations
       WX_CLIENT_ID: 'WX_CLIENT_ID'
       WX_CLIENT_SECRET: 'WX_CLIENT_SECRET'
+      # WeChat oauth
+      WECHAT_APP_ID: 'WECHAT_APP_ID'
+      WECHAT_APP_SECRET: 'WECHAT_APP_SECRET'
       GOOGLE_CLIENT_ID: xxx-xxx.apps.googleusercontent.com
       INVITE_EXPIRY_HOURS: 72
       #Tencent Sms configurations

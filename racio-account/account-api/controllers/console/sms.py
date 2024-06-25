@@ -37,7 +37,7 @@ class SmsSendApi(Resource):
         if args['phone'] is None:
             return response_json(-1, '请输入手机号码')
         if AccountService.check_phone_exists(args['phone']):
-            return response_json(-1, '该手机号已注册')
+            return response_json(-1, '该手机号已绑定了其他帐号，请更换手机号码验证')
         code = AccountService.generate_verify_code(args['token'], args['phone'])
         sms.send(args['phone'], code)
         return response_json(0, 'success')

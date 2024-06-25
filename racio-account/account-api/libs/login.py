@@ -4,6 +4,8 @@ from flask import current_app, g, has_request_context, request
 from flask_login.config import EXEMPT_METHODS
 from werkzeug.exceptions import Unauthorized
 from werkzeug.local import LocalProxy
+from services.racio.account_service import AccountService
+from libs.response import response_json
 
 #: A proxy for the current user. If no user is logged in, this will be an
 #: anonymous user
@@ -60,6 +62,10 @@ def login_required(func):
             pass
         elif not current_user.is_authenticated:
             return current_app.login_manager.unauthorized()
+
+        user_data = AccountService.get_user_data(current_user.id)
+        if not user_data:
+            return response_json(-1, '请重新登录')
 
         # flask 1.x compatibility
         # current_app.ensure_sync is only available in Flask >= 2.0

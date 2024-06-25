@@ -115,7 +115,8 @@ class AccountService:
         return account
 
     @staticmethod
-    def link_account_integrate(provider: str, open_id: str, account: Account) -> None:
+    def link_account_integrate(provider: str, open_id: str, nickname: str, headimgurl: str, unionid: str,
+                               account: Account) -> None:
         """Link account integrate"""
         try:
             # Query whether there is an existing binding record for the same provider
@@ -127,10 +128,14 @@ class AccountService:
                 account_integrate.open_id = open_id
                 account_integrate.encrypted_token = ""
                 account_integrate.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+                account_integrate.nickname = nickname
+                account_integrate.headimgurl = headimgurl
+                account_integrate.unionid = unionid
             else:
                 # If it does not exist, create a new record
                 account_integrate = AccountIntegrate(account_id=account.id, provider=provider, open_id=open_id,
-                                                     encrypted_token="")
+                                                     encrypted_token="", nickname=nickname, headimgurl=headimgurl,
+                                                     unionid=unionid)
                 db.session.add(account_integrate)
 
             db.session.commit()
@@ -169,7 +174,8 @@ class AccountService:
         """
         query = db.select(Account).order_by(Account.created_at.desc())
         if args['keyword'] != '':
-            query = db.session.query(Account).filter(Account.phone.like("%"+str(args['keyword'])+"%")).order_by(Account.created_at.desc())
+            query = db.session.query(Account).filter(Account.phone.like("%" + str(args['keyword']) + "%")).order_by(
+                Account.created_at.desc())
         account_models = db.paginate(
             query,
             page=args['page'],
@@ -239,7 +245,7 @@ class AccountService:
     def generate_verify_code(token: str, phone: str) -> str:
         verify_code = str(random.randint(1000, 9999))
         # verify_code = ''.join(codes)
-        cache_key = f'member_verify_code:{token}'
+        cache_key = f'racio_verify_code:{token}'
         verify_data = {
             'phone': phone,
             'code': verify_code,
@@ -254,7 +260,7 @@ class AccountService:
 
     @staticmethod
     def get_verify_code(token: str) -> dict:
-        cache_key = f'member_verify_code:{token}'
+        cache_key = f'racio_verify_code:{token}'
         data = redis_client.get(cache_key)
         if not data:
             return None
@@ -263,15 +269,18 @@ class AccountService:
 
     @staticmethod
     def revoke_verify_code(token: str):
-        cache_key = f'member_verify_code:{token}'
+        cache_key = f'racio_verify_code:{token}'
         redis_client.delete(cache_key)
 
     @staticmethod
-    def save_access_code(token: str, provider: str, open_id: str):
-        cache_key = f'member_access_code:{token}'
+    def save_access_code(token: str, provider: str, open_id: str, nickname: str, headimgurl: str, unionid: str):
+        cache_key = f'racio_access_code:{token}'
         access_data = {
             'provider': provider,
             'open_id': open_id,
+            'nickname': nickname,
+            'headimgurl': headimgurl,
+            'unionid': unionid
         }
         redis_client.setex(
             cache_key,
@@ -281,7 +290,7 @@ class AccountService:
 
     @staticmethod
     def get_access_code(token: str):
-        cache_key = f'member_access_code:{token}'
+        cache_key = f'racio_access_code:{token}'
         data = redis_client.get(cache_key)
         if not data:
             return None
@@ -301,15 +310,23 @@ class AccountService:
         return token
 
     @staticmethod
-    def get_account_integrate_by_openid(provider: str, open_id: str) -> bool:
-        account_integrate = AccountIntegrate.query.filter_by(provider=provider, open_id=open_id).first()
+    def get_account_integrate_by_unionid(provider: str, unionid: str) -> bool:
+        account_integrate = AccountIntegrate.query.filter_by(provider=provider, unionid=unionid).first()
         if not account_integrate:
             return None
         else:
             return account_integrate
 
     @staticmethod
-    def create_member_invite(tenant_id: str, role: str, invited_by: str, remark: str, domain: str) -> MemberInvite:
+    def get_account_integrate_by_account_id(provider: str, account_id: str) -> bool:
+        account_integrate = AccountIntegrate.query.filter_by(provider=provider, account_id=account_id).first()
+        if not account_integrate:
+            return None
+        else:
+            return account_integrate
+
+    @staticmethod
+    def create_member_invite(tenant_id: str, role: str, invited_by: str, remark: str, domain: str, email: str) -> MemberInvite:
         """create member_invite"""
         memberInvite = MemberInvite()
         memberInvite.tenant_id = tenant_id
@@ -317,6 +334,7 @@ class AccountService:
         memberInvite.invited_by = invited_by
         memberInvite.remark = remark
         memberInvite.domain = domain
+        memberInvite.email = email
         db.session.add(memberInvite)
         db.session.commit()
         return memberInvite
@@ -330,7 +348,7 @@ class AccountService:
             return None
 
     @staticmethod
-    def get_member_invites(tenant_id: str = None) -> list[MemberInvite]:
+    def get_member_invites(tenant_id: str = None, account_id: str = None) -> list[MemberInvite]:
         member_invites = []
         # if tenant_id is not None:
         #     member_invites = MemberInvite.query.filter_by(tenant_id=tenant_id).order_by(
@@ -338,7 +356,10 @@ class AccountService:
         # else:
         #     member_invites = MemberInvite.query.order_by(MemberInvite.created_at.asc()).all()
         member_invites = MemberInvite.query.filter_by(tenant_id=tenant_id).order_by(
-            MemberInvite.created_at.asc()).all()
+            MemberInvite.created_at.desc()).all()
+        if account_id is not None:
+            member_invites = MemberInvite.query.filter_by(tenant_id=tenant_id, invited_by=account_id).order_by(
+                MemberInvite.created_at.desc()).all()
         return member_invites
 
     @staticmethod
@@ -347,7 +368,6 @@ class AccountService:
         if member_invite:
             db.session.delete(member_invite)
             db.session.commit()
-
 
     @classmethod
     def get_invitation_if_token_valid(cls, token: str) -> Optional[dict[str, Any]]:
@@ -368,3 +388,35 @@ class AccountService:
     def get_account_num(account_role: str) -> int:
         num = Account.query.filter_by(account_role=account_role).count()
         return num
+
+    @staticmethod
+    def set_user_data(account_id: str, tenant_id: str = '', account_role: str = '') -> None:
+        cache_key = f'racio_user_data:{account_id}'
+        json_data = AccountService.get_user_data(account_id)
+        if not json_data:
+            json_data = {
+                'tenant_id': '',
+                'account_role': ''
+            }
+
+        if tenant_id != '':
+            json_data['tenant_id'] = tenant_id
+
+        if account_role != '':
+            # account_role
+            json_data['account_role'] = account_role
+
+        redis_client.setex(
+            cache_key,
+            7200,
+            json.dumps(json_data)
+        )
+
+    @staticmethod
+    def get_user_data(account_id: str):
+        cache_key = f'racio_user_data:{account_id}'
+        data = redis_client.get(cache_key)
+        if not data:
+            return None
+        json_data = json.loads(data)
+        return json_data

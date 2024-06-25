@@ -2,6 +2,7 @@ import enum
 from flask_login import UserMixin
 from extensions.ext_database import db
 from models import StringUUID
+from dataclasses import dataclass
 
 class AccountStatus(str, enum.Enum):
     PENDING = 'pending'
@@ -92,6 +93,9 @@ class AccountIntegrate(db.Model):
     encrypted_token = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    nickname = db.Column(db.String(255), nullable=True, server_default='')
+    headimgurl = db.Column(db.String(255), nullable=True, server_default='')
+    unionid = db.Column(db.String(255), nullable=False, server_default='')
 
 
 class MemberInvite(db.Model):
@@ -107,6 +111,7 @@ class MemberInvite(db.Model):
     invited_by = db.Column(StringUUID, nullable=False)
     remark = db.Column(db.String(255), nullable=True, server_default='')
     domain = db.Column(db.String(255), nullable=True, server_default='')
+    email = db.Column(db.String(255), nullable=True, server_default='')
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
 
 

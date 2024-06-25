@@ -1,6 +1,9 @@
+import logging
 import random
+
+from flask import request
 from flask_restful import Resource, reqparse
-from libs.helper import email, str_len, timezone
+from libs.helper import uuid_value
 from libs.response import response_json
 from models.racio.account import AccountStatus
 from services.racio.account_service import AccountService
@@ -14,7 +17,7 @@ class ActivateCheckApi(Resource):
 
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('token', type=str, required=True, nullable=False, location='json')
+        parser.add_argument('token', type=uuid_value, required=True, nullable=False, location='json')
         args = parser.parse_args()
 
         token = args['token']
@@ -22,7 +25,7 @@ class ActivateCheckApi(Resource):
 
         tenant_name = ""
         role = ""
-        if invitation is not None:
+        if invitation:
             if invitation['tenant']:
                 tenant = invitation['tenant']
                 tenant_name = tenant['name']
@@ -38,7 +41,7 @@ class ActivateApi(Resource):
 
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('token', type=str, required=True, nullable=False, location='json')
+        parser.add_argument('token', type=uuid_value, required=True, nullable=False, location='json')
         # parser.add_argument('name', type=str_len(30), required=True, nullable=False, location='json')
         # parser.add_argument('password', type=valid_password, required=True, nullable=False, location='json')
         # parser.add_argument('interface_language', type=supported_language, required=True, nullable=False,location='json')
@@ -47,18 +50,21 @@ class ActivateApi(Resource):
         # parser.add_argument('provider', type=str, required=True, nullable=False, location='json', default='wx')
         parser.add_argument('access_token', type=str, required=True, nullable=False, location='json', default='')
         parser.add_argument('code', type=str, required=True, nullable=True, location='json')
-        parser.add_argument('tenant_name', type=str_len(255), required=True, nullable=True, location='json')
+        parser.add_argument('tenant_name', type=str, required=True, nullable=True, location='json')
         args = parser.parse_args()
 
-        # 获取登录openid
+        # logging.info(args)
+
+        # 获取登录unionid
         access_data = AccountService.get_access_code(args['access_token'])
         if not access_data:
             return response_json(-1, '无授权信息，请重新登录授权')
 
-        account_integrate = AccountService.get_account_integrate_by_openid(access_data['provider'],
-                                                                           access_data['open_id'])
+        # logging.info(access_data)
+        account_integrate = AccountService.get_account_integrate_by_unionid(access_data['provider'],
+                                                                           access_data['unionid'])
 
-        if account_integrate is None:
+        if not account_integrate:
             verify_data = AccountService.get_verify_code(args['token'])
             if not verify_data:
                 return response_json(-1, '验证码已过期')
@@ -72,15 +78,18 @@ class ActivateApi(Resource):
             AccountService.revoke_verify_code(args['token'])
 
         invitation = AccountService.get_invitation_if_token_valid(args['token'])
-        if invitation is None:
+        if not invitation:
             return response_json(-1, '该邀请已被使用')
         member_invite = invitation['data']
         tenant_id = member_invite.tenant_id
-        AccountService.delete_member_invite(args['token'])
+        tenant_name = ""
+        if invitation['tenant']:
+            tenant = invitation['tenant']
+            tenant_name = tenant['name']
         apiService = ApiService()
         # 判断被邀请用户是否存在
         account_id = ''
-        if account_integrate is None:
+        if not account_integrate:
             name = ''
             email = ''
             # 创建账号
@@ -90,15 +99,18 @@ class ActivateApi(Resource):
                 account = Account.query.filter_by(email=email).first()
                 if not account:
                     break
-            account = apiService.create_account(name, email)
-            if account is None:
-                return response_json(-1, '激活失败，请重新获取邀请')
+            account = apiService.create_account(access_data['nickname'], email)
+            if not account:
+                return response_json(-1, '激活失败，请重新提交激活')
             account_id = account['id']
             apiService.account_update_status(account['id'], AccountStatus.ACTIVE)
             racio_account = AccountService.create_account(id=account['id'], email=account['email'],
-                                                          name=account['name'],
+                                                          name=access_data['nickname'],
                                                           interface_language=account['interface_language'],
                                                           phone=args['phone'], status=AccountStatus.ACTIVE)
+
+            apiService.link_account_integrate(access_data['provider'], access_data['open_id'], account_id)
+            AccountService.link_account_integrate(access_data['provider'], access_data['open_id'], access_data['nickname'], access_data['headimgurl'], access_data['unionid'], racio_account)
 
         else:
             account_id = account_integrate.account_id
@@ -107,42 +119,78 @@ class ActivateApi(Resource):
         if member_invite.role == AccountRole.OWNER:
             if args['tenant_name'] == '':
                 return response_json(-1, '请填写空间名')
-            #判断是否已创建owner空间
+            if len(args['tenant_name']) < 3 or len(args['tenant_name']) > 12:
+                return response_json(-1, '请输入3到12个字符作为空间名')
+            # 判断是否已创建owner空间
             is_exists = Dify_AccountService.check_owner_exists(account_id, AccountRole.OWNER)
             if is_exists:
                 return response_json(-1, '该账号已创建空间，不能重复创建')
             # 创建空间
             tenant = apiService.create_tenant(args['tenant_name'], racio_account.email)
             tenant_id = tenant['id']
+            tenant_name = args['tenant_name']
         else:
             # 加入空间
+            # 判断该用户是否加入了同一个空间
+            is_exists = Dify_AccountService.check_account_join_exists(tenant_id, account_id)
+            if is_exists:
+                return response_json(-1, '不能重复加入同一个空间')
             apiService.create_tenant_member(tenant_id, account_id, member_invite.role)
 
-        apiService.link_account_integrate(access_data['provider'], access_data['open_id'], account_id)
-        AccountService.link_account_integrate(access_data['provider'], access_data['open_id'], racio_account)
-
+        AccountService.delete_member_invite(args['token'])
+        AccountService.update_last_login(racio_account, request)
         token = AccountService.get_account_jwt_token(racio_account)
-        #切换用户空间
+        # 切换用户空间
         Dify_AccountService.switch_tenant(token, tenant_id)
+
+        AccountService.set_user_data(account_id=account_id, tenant_id=tenant_id,
+                                     account_role=member_invite.role)
         data = {
             "token": token,
-            "account_role": member_invite.role
+            "account_role": member_invite.role,
+            "current_role": member_invite.role,
+            "tenant_id": tenant_id,
+            "tenant_name": tenant_name,
+            "name": access_data['nickname']
         }
         return response_json(0, 'success', data)
 
 
-# class TestApi(Resource):
-#
-#     def post(self):
-#         parser = reqparse.RequestParser()
-#         parser.add_argument('account_id', type=str, required=True, nullable=False, location='json')
-#         parser.add_argument('role', type=str, required=True, nullable=False, location='json')
-#         args = parser.parse_args()
-#
-#         data = Dify_AccountService.check_owner_exists(args['account_id'], args['role'])
-#         return response_json(0, 'success', data)
+class TenantCreateCheckApi(Resource):
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('token', type=uuid_value, required=True, nullable=False, location='json')
+        parser.add_argument('access_token', type=str, required=True, nullable=False, location='json', default='')
+        args = parser.parse_args()
+
+        invitation = AccountService.get_invitation_if_token_valid(args['token'])
+        if not invitation:
+            return response_json(-1, '该邀请已被使用')
+
+        member_invite = invitation['data']
+
+        # 获取登录unionid
+        access_data = AccountService.get_access_code(args['access_token'])
+        if not access_data:
+            return response_json(-1, '无授权信息，请重新登录授权')
+
+        # logging.info(access_data)
+        account_integrate = AccountService.get_account_integrate_by_unionid(access_data['provider'],
+                                                                            access_data['unionid'])
+        if not account_integrate:
+            return response_json(0, 'success', {'has_owner_tenant': False})
+
+        account_id = account_integrate.account_id
+        if member_invite.role == AccountRole.OWNER:
+            # 判断是否已创建owner空间
+            is_exists = Dify_AccountService.check_owner_exists(account_id, AccountRole.OWNER)
+            if is_exists:
+                return response_json(0, 'success', {'has_owner_tenant': True})
+
+        return response_json(0, 'success', {'has_owner_tenant': False})
 
 
 api.add_resource(ActivateCheckApi, '/activate/check')
 api.add_resource(ActivateApi, '/activate')
-# api.add_resource(TestApi, '/activate/check_owner_exists')
+api.add_resource(TenantCreateCheckApi, '/activate/create_check')

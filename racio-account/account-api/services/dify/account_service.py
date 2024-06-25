@@ -31,6 +31,8 @@ class AccountService:
             return account.account_role
         apiService = ApiService()
         tenants = apiService.get_all_tenant(account.id)
+        if not tenants:
+            return AccountRole.NORMAL
         for tenant in tenants:
             if tenant['role'] == AccountRole.OWNER:
                 return tenant['role']
@@ -44,6 +46,33 @@ class AccountService:
                 return tenant['role']
 
         return AccountRole.NORMAL
+
+
+    @staticmethod
+    def get_current_tenant(token, account):
+        setattr(g, 'auth_token', token)
+        apiService = ApiService()
+        tenant = apiService.get_current_tenant()
+        if tenant:
+            return tenant
+        else:
+            tenants = apiService.get_all_tenant(account.id)
+            if tenants and len(tenants) > 0:
+                return tenants[0]
+            return None
+
+
+
+    @staticmethod
+    def check_account_join_exists(tenant_id, account_id) -> bool:
+        apiService = ApiService()
+        tenants = apiService.get_all_tenant(account_id)
+        if not tenants:
+            return False
+        for tenant in tenants:
+            if tenant['id'] == tenant_id:
+                return True
+        return False
 
 
     # @classmethod

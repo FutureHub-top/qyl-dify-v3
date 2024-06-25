@@ -12,7 +12,7 @@ class InitApi(Resource):
     def post(self):
         # 创建超级管理员
         with current_app.app_context():
-            password = current_app.config.get('WX_CLIENT_ID')
+            password = current_app.config.get('INIT_PASSWORD')
 
         num = AccountService.get_account_num(AccountRole.SUPERADMIN)
         apiService = ApiService()
