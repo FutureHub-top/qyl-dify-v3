@@ -71,6 +71,7 @@ const ChatWrapper = forwardRef<ChatWrapperRefType>((_, ref) => {
       {
         query,
         files,
+        user: 'user',
         inputs: workflowStore.getState().inputs,
         conversation_id: conversationId,
       },

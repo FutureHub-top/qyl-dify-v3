@@ -20,6 +20,7 @@ import { replaceStringWithValues } from '@/app/components/app/configuration/prom
 import type { Annotation } from '@/models/log'
 import { WorkflowRunningStatus } from '@/app/components/workflow/types'
 import useTimestamp from '@/hooks/use-timestamp'
+import { useAppContext } from '@/context/app-context'
 
 type GetAbortController = (abortController: AbortController) => void
 type SendCallback = {
@@ -32,6 +33,8 @@ type SendCallback = {
 export const useCheckPromptVariables = () => {
   const { t } = useTranslation()
   const { notify } = useToastContext()
+  // const { userProfile } = 1()
+  // console.log(userProfile.id, userProfile.name, 'userProfileuserProfileuserProfile')
 
   const checkPromptVariables = useCallback((promptVariablesConfig: {
     inputs: Inputs
@@ -91,7 +94,7 @@ export const useChat = (
   const conversationMessagesAbortControllerRef = useRef<AbortController | null>(null)
   const suggestedQuestionsAbortControllerRef = useRef<AbortController | null>(null)
   const checkPromptVariables = useCheckPromptVariables()
-
+  const { userProfile } = useAppContext()
   useEffect(() => {
     setAutoFreeze(false)
     return () => {
@@ -241,8 +244,9 @@ export const useChat = (
     hasStopResponded.current = false
 
     const bodyParams = {
-      response_mode: 'streaming',
+      response_mode: 'blocking',
       conversation_id: connversationId.current,
+      user: `${userProfile?.name}@${userProfile?.id}`,
       ...data,
     }
     if (bodyParams?.files?.length) {

@@ -598,6 +598,8 @@ const ConversationList: FC<IConversationList> = ({ logs, appDetail, onRefresh })
         <tbody className="text-gray-500">
           {logs.data.map((log: any) => {
             const endUser = log.from_end_user_session_id
+            const fromAccountId = log.from_account_id
+            const fromSource = log.from_source
             const leftValue = get(log, isChatMode ? 'name' : 'message.inputs.query') || (!isChatMode ? (get(log, 'message.query') || get(log, 'message.inputs.default_input')) : '') || ''
             const rightValue = get(log, isChatMode ? 'message_count' : 'message.answer')
             return <tr
@@ -609,7 +611,7 @@ const ConversationList: FC<IConversationList> = ({ logs, appDetail, onRefresh })
               }}>
               <td className='text-center align-middle'>{!log.read_at && <span className='inline-block bg-[#3F83F8] h-1.5 w-1.5 rounded'></span>}</td>
               <td className='w-[160px]'>{formatTime(log.created_at, t('appLog.dateTimeFormat') as string)}</td>
-              <td>{renderTdValue(endUser || defaultValue, !endUser)}</td>
+              <td>{renderTdValue(fromSource === 'console' ? fromAccountId : (endUser || defaultValue), !endUser)}</td>
               <td style={{ maxWidth: isChatMode ? 300 : 200 }}>
                 {renderTdValue(leftValue || t('appLog.table.empty.noChat'), !leftValue, isChatMode && log.annotated)}
               </td>

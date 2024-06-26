@@ -18,14 +18,14 @@ const Explore: FC<IExploreProps> = ({
 }) => {
   const { t } = useTranslation()
   const [controlUpdateInstalledApps, setControlUpdateInstalledApps] = useState(0)
-  const { userProfile } = useAppContext()
+  const { userProfile, currentWorkspace } = useAppContext()
   const [hasEditPermission, setHasEditPermission] = useState(false)
   const [installedApps, setInstalledApps] = useState<InstalledApp[]>([])
   const media = useBreakpoints()
   const isMobile = media === MediaType.mobile
 
   useEffect(() => {
-    document.title = `${t('racio.office.title')} -  Racio`;
+    document.title = `${currentWorkspace.name} -By Racio`;
     (async () => {
       const { accounts } = await fetchMembers({ url: '/workspaces/current/members', params: {} })
       if (!accounts)

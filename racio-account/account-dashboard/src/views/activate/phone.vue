@@ -8,7 +8,7 @@
                     </el-col>
                     <el-col :span="24">
                         <el-tooltip :visible="checkWorkSpaceBtn.tips" class="box-item" effect="light"
-                            :content="checkWorkSpaceBtn.tipstext ? checkWorkSpaceBtn.tipstext : '长度5-30个字符'"
+                            :content="checkWorkSpaceBtn.tipstext ? checkWorkSpaceBtn.tipstext : '长度3-12个字符'"
                             placement="top-end">
                             <el-input placeholder="请输入用户名/空间名" v-model.trim="workspace" minlength="8" maxlength="30"
                                 clearable @input="isWorkspace" :disabled="invitTokenInfo.role !== 'owner'" />
@@ -100,7 +100,7 @@ function isPhone(value: string) {
     }
 }
 function isWorkspace() {
-    const reg = /^[a-z0-9]{3,12}$/i
+    const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{3,12}$/i
 
     if (!reg.test(workspace.value)) {
         checkWorkSpaceBtn.value.tips = true

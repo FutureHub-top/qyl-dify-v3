@@ -19,6 +19,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="remark" label="备注" width="120" />
+                    <el-table-column prop="invited_by" label="邀请人" width="120" />
                     <el-table-column prop="role" label="邀请角色" width="120">
                         <template #default="scope">
                             <div>{{ scope.row.role == "owner" ? "空间所有者" : scope.row.role == "admin" ? "空间管理员" :

@@ -22,7 +22,7 @@ const translation = {
   },
   apps: {
     title: '探索Racio的应用',
-    description: '使用这些模板应用程序，或根据模板自定义您自己的应用程序。',
+    description: '欢迎来到数字员工办公室，点击 TA 开启您的效能之旅',
     allCategories: '推荐',
   },
   appCard: {

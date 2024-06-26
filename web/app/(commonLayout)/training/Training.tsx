@@ -50,7 +50,7 @@ const getKey = (
 
 const Training = () => {
   const { t } = useTranslation()
-  const { isCurrentWorkspaceManager } = useAppContext()
+  const { isCurrentWorkspaceManager, currentWorkspace } = useAppContext()
   const showTagManagementModal = useTagStore(s => s.showTagManagementModal)
   const [activeTab, setActiveTab] = useTabSearchParams({
     defaultTab: 'all',
@@ -80,12 +80,12 @@ const Training = () => {
   ]
 
   useEffect(() => {
-    document.title = `${t('racio.training.title')} -  Dify`
+    document.title = `${currentWorkspace.name} - By Racio`
     if (localStorage.getItem(NEED_REFRESH_APP_LIST_KEY) === '1') {
       localStorage.removeItem(NEED_REFRESH_APP_LIST_KEY)
       mutate()
     }
-  }, [])
+  }, [currentWorkspace])
 
   const hasMore = data?.at(-1)?.has_more ?? true
   useEffect(() => {
