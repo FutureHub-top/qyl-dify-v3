@@ -1,25 +1,11 @@
 <template>
     <div class="m-tags-view">
         <div class="tags-view">
-            <el-tabs
-                v-model="activeTabsValue"
-                type="card"
-                @tab-click="tabClick"
-                @tab-remove="removeTab"
-            >
-                <el-tab-pane
-                    v-for="item in visitedViews"
-                    :key="item.path"
-                    :path="item.path"
-                    :label="item.title"
-                    :name="item.path"
-                    :closable="!(item.meta && item.meta.affix)"
-                >
+            <el-tabs v-model="activeTabsValue" type="card" @tab-click="tabClick" @tab-remove="removeTab">
+                <el-tab-pane v-for="item in visitedViews" :key="item.path" :path="item.path" :label="item.title"
+                    :name="item.path" :closable="!(item.meta && item.meta.affix)">
                     <template #label>
-                        <el-icon
-                            v-if="item.icon"
-                            class="tabs-icon"
-                        >
+                        <el-icon v-if="item.icon" class="tabs-icon">
                             <component :is="item.icon"></component>
                         </el-icon>
                         {{ item.title }}
@@ -135,11 +121,13 @@ const removeTab = async (activeTabPath: string) => {
     padding-left: 10px;
     padding-right: 10px;
     background: white;
+
     .right-btn {
         height: 100%;
         flex-shrink: 0;
     }
 }
+
 .tags-view {
     flex: 1;
     overflow: hidden;
@@ -153,14 +141,17 @@ const removeTab = async (activeTabPath: string) => {
         padding: 0 10px;
         margin: 0;
     }
+
     :deep(.el-tabs) {
         .el-tabs__nav {
             border: none;
         }
+
         .el-tabs__header .el-tabs__item {
             border: none;
             color: #cccccc;
         }
+
         .el-tabs__header .el-tabs__item.is-active {
             color: $primaryColor;
             border-bottom: 2px solid $primaryColor;

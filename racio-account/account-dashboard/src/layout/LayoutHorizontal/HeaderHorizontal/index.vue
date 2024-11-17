@@ -1,27 +1,14 @@
 <template>
     <!--纵向布局-->
     <Height />
-    <div
-        class="m-layout-header"
-        :class="{
-            'fixed-header': themeConfig.fixedHeader,
-        }"
-    >
+    <div class="m-layout-header" :class="{
+        'fixed-header': themeConfig.fixedHeader,
+    }">
         <div class="header-inner">
-            <el-menu
-                mode="horizontal"
-                :default-active="activeMenu"
-                background-color="#304156"
-                text-color="#bfcbd9"
-                :unique-opened="SettingStore.themeConfig.uniqueOpened"
-                :collapse-transition="false"
-                class="menu-horizontal"
-            >
-                <SubItem
-                    v-for="route in permission_routes"
-                    :key="route.path"
-                    :item="route"
-                />
+            <el-menu mode="horizontal" :default-active="activeMenu" background-color="#304156" text-color="#bfcbd9"
+                :unique-opened="SettingStore.themeConfig.uniqueOpened" :collapse-transition="false"
+                class="menu-horizontal">
+                <SubItem v-for="route in permission_routes" :key="route.path" :item="route" />
             </el-menu>
             <HeaderToolRight />
         </div>

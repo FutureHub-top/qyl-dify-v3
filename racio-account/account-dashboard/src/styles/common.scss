@@ -8,6 +8,7 @@ body {
   padding: 0;
   font-size: 14px;
 }
+
 body {
   background: #f0f2f5;
 }
@@ -18,11 +19,13 @@ body {
   align-items: center;
   justify-content: center;
 }
+
 .flex-justify-between {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+
 .flex-align-center {
   display: flex;
   align-items: center;
@@ -57,10 +60,12 @@ body {
 #nprogress .bar {
   background: $primaryColor !important;
 }
+
 #nprogress .spinner-icon {
   border-top-color: $primaryColor !important;
   border-left-color: $primaryColor !important;
 }
+
 #nprogress .peg {
   box-shadow: 0 0 10px $primaryColor, 0 0 5px $primaryColor !important;
 }
@@ -73,6 +78,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 .app-container-inner {
   height: 100%;
   width: 100%;
@@ -86,6 +92,7 @@ body {
   .header-icon {
     color: #bfcbd9 !important;
   }
+
   .el-dropdown-link {
     color: #bfcbd9 !important;
   }
@@ -94,10 +101,12 @@ body {
 .el-pager li:focus {
   border: none;
 }
+
 .el-dropdown:focus {
   border: none;
   outline: none !important;
 }
+
 .svg-icon:focus {
   border: none !important;
   outline: none !important;

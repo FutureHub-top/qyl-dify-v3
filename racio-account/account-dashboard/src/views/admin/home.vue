@@ -174,7 +174,7 @@ function sendInvite() {
         })
 }
 onMounted(async () => {
-    // AuthList()
+    AuthList()
     // getMemberInvites()
 })
 </script>

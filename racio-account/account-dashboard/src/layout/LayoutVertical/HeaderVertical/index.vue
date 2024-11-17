@@ -1,14 +1,11 @@
 <template>
     <!--纵向布局-->
     <Height />
-    <div
-        class="m-layout-header"
-        :class="{
-            'fixed-header': themeConfig.fixedHeader,
-            collapse: themeConfig.fixedHeader && isCollapse,
-            'no-collapse': themeConfig.fixedHeader && !isCollapse,
-        }"
-    >
+    <div class="m-layout-header" :class="{
+        'fixed-header': themeConfig.fixedHeader,
+        collapse: themeConfig.fixedHeader && isCollapse,
+        'no-collapse': themeConfig.fixedHeader && !isCollapse,
+    }">
         <div class="header-inner">
             <HeaderToolLeft />
             <HeaderToolRight />
