@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse
 from services.racio.account_service import AccountService
 from extensions.ext_sms import sms
 from libs.response import response_json
+import logging
 from . import api
 
 
@@ -14,7 +15,8 @@ class SmsVerifyApi(Resource):
         args = parser.parse_args()
 
         account_service = AccountService()
-        verify_data = account_service.get_verify_code(args['token'])
+        verify_data = account_service.get_verify_code(args['token'], args['phone'])
+        logging.info(f'SmsVerifyApi.post.verify_data: {verify_data}, token: {args['token']}')
         if not verify_data:
             return response_json(-1, '验证码已过期')
 
@@ -24,7 +26,8 @@ class SmsVerifyApi(Resource):
         if verify_data['code'] != args['code']:
             return response_json(-1, '验证码不正确')
 
-        account_service.revoke_verify_code(args['token'])
+        account_service.revoke_verify_code(args['token'], args['phone'])
+        logging.info(f'SmsVerifyApi.post.revoke_verify_code: - token: {args['token']}, phone: {args['phone']}')
         return response_json(0, 'success')
 
 

@@ -97,7 +97,8 @@ class ActivateApi(Resource):
         account_integrate = AccountService.get_account_integrate_by_unionid(access_data['provider'], access_data['unionid'])
 
         if not account_integrate:
-            verify_data = AccountService.get_verify_code(args['token'])
+            verify_data = AccountService.get_verify_code(args['token'], args['phone'])
+            logging.info('ActivateApi.post.verify_data: {}, token: {}'.format(verify_data, args['token']))
             if not verify_data:
                 return response_json(-1, '验证码已过期')
 
@@ -107,7 +108,8 @@ class ActivateApi(Resource):
             if verify_data['code'] != args['code']:
                 return response_json(-1, '验证码不正确')
 
-            AccountService.revoke_verify_code(args['token'])
+            AccountService.revoke_verify_code(args['token'], args['phone'])
+            logging.info('ActivateApi.post.revoke_verify_code: - token: {}, phone: {}'.format(args['token'], args['phone']))
 
         # get invitation_data and tenant by token (MemberInvite id)
         invitation = AccountService.get_invitation_if_token_valid(args['token'])

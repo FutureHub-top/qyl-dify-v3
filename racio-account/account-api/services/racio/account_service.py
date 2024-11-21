@@ -245,8 +245,8 @@ class AccountService:
     @staticmethod
     def generate_verify_code(token: str, phone: str) -> str:
         verify_code = str(random.randint(1000, 9999))
-        # verify_code = ''.join(codes)
-        cache_key = f'racio_verify_code:{token}'
+        cache_key = f'racio_verify_code:{token}:{phone}'
+        logging.info(f'generate_verify_code - cache_key: {cache_key}, verify_code: {verify_code}')
         verify_data = {
             'phone': phone,
             'code': verify_code,
@@ -260,8 +260,9 @@ class AccountService:
         return verify_code
 
     @staticmethod
-    def get_verify_code(token: str) -> dict:
-        cache_key = f'racio_verify_code:{token}'
+    def get_verify_code(token: str, phone: str) -> dict:
+        cache_key = f'racio_verify_code:{token}:{phone}'
+        logging.info(f'get_verify_code - cache_key: {cache_key}')
         data = redis_client.get(cache_key)
         if not data:
             return None
@@ -269,8 +270,9 @@ class AccountService:
         return verify_data
 
     @staticmethod
-    def revoke_verify_code(token: str):
-        cache_key = f'racio_verify_code:{token}'
+    def revoke_verify_code(token: str, phone: str):
+        cache_key = f'racio_verify_code:{token}:{phone}'
+        logging.info(f'revoke_verify_code - cache_key: {cache_key}')
         redis_client.delete(cache_key)
 
     @staticmethod
