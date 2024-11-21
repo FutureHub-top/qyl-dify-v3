@@ -79,14 +79,14 @@ class ActivateApi(Resource):
         # parser.add_argument('password', type=valid_password, required=True, nullable=False, location='json')
         # parser.add_argument('interface_language', type=supported_language, required=True, nullable=False,location='json')
         # parser.add_argument('timezone', type=timezone, required=True, nullable=False, location='json')
-        parser.add_argument('phone', type=str, required=True, nullable=True, location='json')
         # parser.add_argument('provider', type=str, required=True, nullable=False, location='json', default='wx')
         parser.add_argument('access_token', type=str, required=True, nullable=False, location='json', default='')
-        parser.add_argument('code', type=str, required=True, nullable=True, location='json')
+        parser.add_argument('phone', type=str, required=True, nullable=True, location='json')   # 手机号
+        parser.add_argument('code', type=str, required=True, nullable=True, location='json')    # 验证码
         parser.add_argument('tenant_name', type=str, required=True, nullable=True, location='json')
         args = parser.parse_args()
 
-        # logging.info(args)
+        logging.info(args)
 
         # 获取登录unionid
         access_data = AccountService.get_access_code(args['access_token'])
@@ -160,6 +160,7 @@ class ActivateApi(Resource):
             is_exists = Dify_AccountService.check_owner_exists(account_id, AccountRole.OWNER)
             if is_exists:
                 return response_json(-1, '该账号已创建空间，不能重复创建')
+            
             # 创建空间
             tenant = apiService.create_tenant(args['tenant_name'], racio_account.email)
             tenant_id = tenant['id']

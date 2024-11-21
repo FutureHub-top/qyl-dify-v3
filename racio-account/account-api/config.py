@@ -73,6 +73,8 @@ class Config:
         self.LOG_FORMAT = get_env('LOG_FORMAT')
         self.LOG_DATEFORMAT = get_env('LOG_DATEFORMAT')
 
+        self.CONSOLE_API_URL = get_env('CONSOLE_API_URL')
+
         # The front-end URL prefix of the console web.
         # used to concatenate some front-end addresses and for CORS configuration use.
         self.CONSOLE_WEB_URL = get_env('CONSOLE_WEB_URL')
@@ -179,13 +181,13 @@ class Config:
         self.WECHAT_APP_ID = get_env('WECHAT_APP_ID')
         self.WECHAT_APP_SECRET = get_env('WECHAT_APP_SECRET')
 
-        self.DIFY_INNER_API_KEY = get_env('DIFY_INNER_API_KEY')
+        self.DIFY_INNER_API_KEY = get_env('DIFY_INNER_API_KEY') # Maybe we can delete it
         self.DIFY_ADMIN_API_KEY = get_env('DIFY_ADMIN_API_KEY')
         self.DIFY_API_URL = get_env('DIFY_API_URL')
 
         self.INIT_PASSWORD = get_env('INIT_PASSWORD')
 
-        self.CONSOLE_API_URL = get_env('CONSOLE_API_URL')
+
 
 
 
