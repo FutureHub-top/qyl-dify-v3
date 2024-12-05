@@ -10,8 +10,9 @@
                         <el-tooltip :visible="checkWorkSpaceBtn.tips" class="box-item" effect="light"
                             :content="checkWorkSpaceBtn.tipstext ? checkWorkSpaceBtn.tipstext : '长度3-12个字符'"
                             placement="top-end">
-                            <el-input placeholder="请输入用户名/空间名" v-model.trim="workspace" minlength="8" maxlength="30"
-                                clearable @input="isWorkspace" :disabled="invitTokenInfo.role !== 'owner'" />
+                            <el-input placeholder="请输入用户名/空间名" v-model.trim="workspace_name" minlength="8"
+                                maxlength="30" clearable @input="isWorkspace"
+                                :disabled="invitTokenInfo.role !== 'owner'" />
                         </el-tooltip>
                     </el-col>
 
@@ -79,13 +80,13 @@ const phoneStatus = ref(false)
 const verifyPhoneNum = ref("")
 const verifyCode = ref("")
 const openId = ref("")
-const workspace = ref("")
 const workspace_name = ref("")
 const accessToken = ref("")
 const showWorkspace = ref(false)
 const showVerify = ref(false)
 const UserStore = useUserStore()
 const dify_url = ref("")
+const tenant_id = ref("")
 const currentRole = ref("normal")
 const urlQuery = getQueryObject(null)
 const { token, code } = getQueryObject(null)
@@ -107,7 +108,7 @@ function isPhone(value: string) {
 function isWorkspace() {
     const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{3,12}$/i
 
-    if (!reg.test(workspace.value)) {
+    if (!reg.test(workspace_name.value)) {
         checkWorkSpaceBtn.value.tips = true
     } else {
         checkWorkSpaceBtn.value.tips = false
@@ -158,19 +159,16 @@ function hasTenant() {
         .then((result) => {
 
             let { data } = result.data
-            workspace.value = data.tenant_name
-
+            workspace_name.value = data.tenant_name
+            tenant_id.value = data.tenant_id
 
             invitTokenInfo.value.role = data.account_role
             if (data.is_joined_tenant) {
-
-                swtichTenant(data.tenant_id)
-
                 getJwtToken({ "access_token": accessToken.value })
                     .then(res => {
                         let { code, data, msg } = res.data
                         if (code == 0) {
-
+                            swtichTenant(tenant_id.value)
                             if (data.tenant_id == "" && data.current_role != "super_admin") {
                                 ElMessageBox.alert('该Racio尚未找到您的关联帐号，请联系管理员（微信：dukexls）申请试用', '提示', {
                                     confirmButtonText: '知道了',
@@ -186,7 +184,7 @@ function hasTenant() {
                                 username: data.name
                             }
 
-                            workspace.value = data.tenant_name
+
                             currentRole.value = data.current_role
                             UserStore.login(userInfo)
 
@@ -290,7 +288,7 @@ function activateAccount() {
         "phone": `${verifyPhoneNum.value}`,
         "code": `${verifyCode.value}`,
         "access_token": accessToken.value,
-        "tenant_name": workspace.value, //长度30个字符
+        "tenant_name": workspace_name.value, //长度30个字符
     })
         .then(res => {
             let { code, msg, data } = res.data

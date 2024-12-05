@@ -81,7 +81,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       // 代理跨域（模拟示例）
       proxy: {
         "/api": {
-          target: "https://at-stg.racio.chat/account/api", // easymock
+          target: "https://at.racio.chat/account/api", // easymock
           changeOrigin: true,
           // rewrite: (path) => path.replace(/^\/api/, ""),
         },
